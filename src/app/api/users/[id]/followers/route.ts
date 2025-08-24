@@ -1,9 +1,10 @@
 import { createRouteClient } from '@/lib/supabaseRoute';
 import { NextResponse } from 'next/server';
 
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const supabase = await createRouteClient();
-  const userId = params.id;
+  const { id } = await params;
+  const userId = id;
   const { data, error } = await supabase
     .from('follows')
     .select('follower')

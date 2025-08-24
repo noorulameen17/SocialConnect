@@ -1,11 +1,12 @@
 import { createRouteClient } from '@/lib/supabaseRoute';
 import { NextResponse } from 'next/server';
 
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const supabase = await createRouteClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-  const commentId = params.id;
+  const { id } = await params;
+  const commentId = id;
   const { data: existing, error: exErr } = await supabase.from('comments').select('author').eq('id', commentId).single();
   if (exErr || !existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   if (existing.author !== user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });

@@ -19,9 +19,9 @@ function sanitizeProfile(p: any) {
   };
 }
 
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const supabase = await createRouteClient();
-  const { id } = params;
+  const { id } = await params;
   if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
   const { data: { user: viewer } } = await supabase.auth.getUser();
   const { data, error } = await supabase.from('profiles').select('*').eq('id', id).single();
