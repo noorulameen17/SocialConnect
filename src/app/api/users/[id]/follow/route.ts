@@ -1,7 +1,7 @@
 import { createRouteClient } from '@/lib/supabaseRoute';
 import { NextResponse } from 'next/server';
 
-interface RouteParams { params: { id: string } }
+type AsyncParams = { params: Promise<{ id: string }> };
 
 // Helper to recalc counts
 async function recalcCounts(supabase: any, followerId: string, followeeId: string) {
@@ -17,8 +17,8 @@ async function recalcCounts(supabase: any, followerId: string, followeeId: strin
 }
 
 // POST follow
-export async function POST(_req: Request, ctx: RouteParams) {
-  const { id: targetId } = ctx.params;
+export async function POST(_req: Request, ctx: AsyncParams) {
+  const { id: targetId } = await ctx.params;
   const supabase = await createRouteClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -50,8 +50,8 @@ export async function POST(_req: Request, ctx: RouteParams) {
 }
 
 // DELETE unfollow
-export async function DELETE(_req: Request, ctx: RouteParams) {
-  const { id: targetId } = ctx.params;
+export async function DELETE(_req: Request, ctx: AsyncParams) {
+  const { id: targetId } = await ctx.params;
   const supabase = await createRouteClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -66,8 +66,8 @@ export async function DELETE(_req: Request, ctx: RouteParams) {
 }
 
 // GET follow status & counts
-export async function GET(_req: Request, ctx: RouteParams) {
-  const { id: targetId } = ctx.params;
+export async function GET(_req: Request, ctx: AsyncParams) {
+  const { id: targetId } = await ctx.params;
   const supabase = await createRouteClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });

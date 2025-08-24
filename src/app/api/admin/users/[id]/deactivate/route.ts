@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '../../../_utils';
 
-interface RouteParams { params: { id: string } }
+type AsyncParams = { params: Promise<{ id: string }> };
 
 // POST /api/admin/users/[id]/deactivate  { active?: boolean }
-export async function POST(req: Request, context: RouteParams) {
-  const { id } = context.params;
+export async function POST(req: Request, context: AsyncParams) {
+  const { id } = await context.params;
   const auth = await requireAdmin();
   if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.error === 'Forbidden' ? 403 : 401 });
   const { supabase, user } = auth;
