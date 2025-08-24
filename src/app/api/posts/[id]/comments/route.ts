@@ -1,10 +1,10 @@
 import { createRouteClient } from '@/lib/supabaseRoute';
 import { NextResponse } from 'next/server';
 
-type AsyncParams = { params: Promise<{ id: string }> };
+interface RouteParams { params: { id: string } }
 
-export async function GET(req: Request, ctx: AsyncParams) {
-  const { id: postId } = await ctx.params;
+export async function GET(req: Request, ctx: RouteParams) {
+  const { id: postId } = ctx.params;
   const supabase = await createRouteClient();
   const { searchParams } = new URL(req.url);
   const limit = Math.min(100, parseInt(searchParams.get('limit') || '50', 10));
@@ -27,8 +27,8 @@ export async function GET(req: Request, ctx: AsyncParams) {
   return NextResponse.json({ comments: enriched });
 }
 
-export async function POST(req: Request, ctx: AsyncParams) {
-  const { id: postId } = await ctx.params;
+export async function POST(req: Request, ctx: RouteParams) {
+  const { id: postId } = ctx.params;
   const supabase = await createRouteClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -47,8 +47,8 @@ export async function POST(req: Request, ctx: AsyncParams) {
   return NextResponse.json({ comment_id: data.id, comment: { ...data, profile: actorProfile || null } });
 }
 
-export async function DELETE(req: Request, ctx: AsyncParams) {
-  const { id: postId } = await ctx.params;
+export async function DELETE(req: Request, ctx: RouteParams) {
+  const { id: postId } = ctx.params;
   const supabase = await createRouteClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -57,7 +57,7 @@ export async function DELETE(req: Request, ctx: AsyncParams) {
   const { searchParams } = new URL(req.url);
   const commentIdParam = searchParams.get('comment_id');
   if (!commentIdParam) return NextResponse.json({ error: 'Missing comment_id' }, { status: 400 });
-  const numericId = /^\d+$/.test(commentIdParam) ? parseInt(commentIdParam, 10) : commentIdParam; // support numeric or uuid
+  const numericId = /^\d+$/.test(commentIdParam) ? parseInt(commentIdParam, 10) : commentIdParam;
   const { data: existing, error: fetchErr } = await supabase
     .from('comments')
     .select('id, author, post_id')

@@ -1,10 +1,10 @@
 import { createRouteClient } from '@/lib/supabaseRoute';
 import { NextResponse } from 'next/server';
 
-type AsyncParams = { params: Promise<{ id: string }> };
+interface RouteParams { params: { id: string } }
 
-export async function POST(_req: Request, ctx: AsyncParams) {
-  const { id } = await ctx.params;
+export async function POST(_req: Request, ctx: RouteParams) {
+  const { id } = ctx.params;
   const supabase = await createRouteClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });

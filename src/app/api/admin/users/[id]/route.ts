@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '../../_utils';
 
+interface RouteParams { params: { id: string } }
+
 // GET /api/admin/users/[id]
-export async function GET(_req: Request, context: { params: Promise<{ id: string }> }) {
-  const { id } = await context.params;
+export async function GET(_req: Request, context: RouteParams) {
+  const { id } = context.params;
   const auth = await requireAdmin();
   if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.error === 'Forbidden' ? 403 : 401 });
   const { supabase } = auth;
@@ -17,8 +19,8 @@ export async function GET(_req: Request, context: { params: Promise<{ id: string
 }
 
 // PATCH /api/admin/users/[id]  { is_admin?: boolean, active?: boolean }
-export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
-  const { id } = await context.params;
+export async function PATCH(req: Request, context: RouteParams) {
+  const { id } = context.params;
   const auth = await requireAdmin();
   if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.error === 'Forbidden' ? 403 : 401 });
   const { supabase, user: acting } = auth;

@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '../../_utils';
 
+interface RouteParams { params: { id: string } }
+
 // DELETE /api/admin/comments/[id]
-export async function DELETE(_req: Request, context: { params: Promise<{ id: string }> }) {
-  const { id } = await context.params;
+export async function DELETE(_req: Request, context: RouteParams) {
+  const { id } = context.params;
   const auth = await requireAdmin();
   if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.error === 'Forbidden' ? 403 : 401 });
   const { supabase, user } = auth;
