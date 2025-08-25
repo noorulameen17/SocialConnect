@@ -6,12 +6,8 @@ import { redirect } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 
 async function fetchJSON(path: string, cookieHeader: string, init?: RequestInit) {
-  const base = (process.env.NEXT_PUBLIC_SITE_URL && process.env.NEXT_PUBLIC_SITE_URL !== ''
-    ? process.env.NEXT_PUBLIC_SITE_URL
-    : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'))
-    .replace(/\/$/, '');
-  const url = `${base}${path}`;
-  const res = await fetch(url, {
+  // Use relative fetch to avoid hitting deployment protection on absolute domain
+  const res = await fetch(path, {
     cache: 'no-store',
     headers: {
       ...(init?.headers || {}),
