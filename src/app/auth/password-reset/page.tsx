@@ -1,7 +1,7 @@
 "use client";
+import { getBrowserClient } from '@/lib/supabaseClient';
 import Link from 'next/link';
 import { useState } from 'react';
-import { getBrowserClient } from '@/lib/supabaseClient';
 
 export default function PasswordResetRequestPage() {
   const [email, setEmail] = useState('');
