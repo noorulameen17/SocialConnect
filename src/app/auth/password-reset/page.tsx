@@ -1,0 +1,40 @@
+"use client";
+import { useState } from 'react';
+
+export default function PasswordResetRequestPage() {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState<string|null>(null);
+  const [err, setErr] = useState<string|null>(null);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErr(null); setMsg(null);
+    if (!email) { setErr('Email required'); return; }
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/password-reset', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email.trim() }) });
+      const json = await res.json();
+      if (!res.ok) setErr(json.error || 'Failed'); else setMsg('If that email exists, a reset link was sent.');
+    } catch (e: any) {
+      setErr(e.message || 'Network error');
+    } finally { setLoading(false); }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="w-full max-w-md space-y-6">
+        <h1 className="text-2xl font-semibold text-center">Reset password</h1>
+        <form onSubmit={submit} className="space-y-4 bg-card border border-border rounded-lg p-6 shadow-sm">
+          <input className="w-full border px-3 py-2 rounded" type="email" required placeholder="Your email" value={email} onChange={e=>setEmail(e.target.value)} />
+          {err && <p className="text-sm text-red-600">{err}</p>}
+          {msg && <p className="text-sm text-green-600">{msg}</p>}
+          <button disabled={loading} className="w-full bg-black text-white py-2 rounded flex items-center justify-center gap-2 disabled:opacity-50">
+            {loading && <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>}
+            <span>{loading ? 'Sending...' : 'Send reset link'}</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}

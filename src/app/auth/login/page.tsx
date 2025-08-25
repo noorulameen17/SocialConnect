@@ -61,6 +61,9 @@ export default function LoginPage() {
           <div className="space-y-2">
             <input name="identifier" required placeholder="Email or Username" value={form.identifier} onChange={onChange} className="w-full border px-3 py-2 rounded" />
             <input name="password" type="password" required placeholder="Password" value={form.password} onChange={onChange} className="w-full border px-3 py-2 rounded" />
+            <div className="flex justify-end">
+              <Link href="/auth/password-reset" className="text-xs text-blue-600 hover:underline">Forgot password?</Link>
+            </div>
           </div>
           {error && <p className="text-red-600 text-sm">{error}</p>}
           {success && <p className="text-green-600 text-sm">{success}</p>}
@@ -78,13 +81,6 @@ export default function LoginPage() {
           )}
           {resent && <p className="text-xs text-green-600">Verification email resent (if account exists).</p>}
         </form>
-        <div className="text-center text-xs text-muted-foreground">
-          <span>By continuing, you agree to our </span>
-          <Link href="/terms" className="underline">Terms</Link>
-          <span> and </span>
-          <Link href="/privacy" className="underline">Privacy Policy</Link>
-          .
-        </div>
       </div>
     </div>
   );

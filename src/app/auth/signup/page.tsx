@@ -75,13 +75,6 @@ export default function SignupPage() {
             <span>{loading ? 'Creating...' : 'Create account'}</span>
           </button>
         </form>
-        <div className="text-center text-xs text-muted-foreground">
-          <span>By creating an account you agree to our </span>
-          <Link href="/terms" className="underline">Terms</Link>
-          <span> and </span>
-            <Link href="/privacy" className="underline">Privacy Policy</Link>
-          .
-        </div>
       </div>
     </div>
   );
