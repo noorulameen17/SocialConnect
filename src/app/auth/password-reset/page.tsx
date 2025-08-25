@@ -1,5 +1,6 @@
 "use client";
 import { useState } from 'react';
+import Link from 'next/link';
 
 export default function PasswordResetRequestPage() {
   const [email, setEmail] = useState('');
@@ -24,6 +25,10 @@ export default function PasswordResetRequestPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-md space-y-6">
+        <div className="flex items-center justify-between text-sm">
+          <Link href="/auth/login" className="text-blue-600 hover:underline">← Back to login</Link>
+          <Link href="/auth/signup" className="text-muted-foreground hover:text-foreground">Need an account?</Link>
+        </div>
         <h1 className="text-2xl font-semibold text-center">Reset password</h1>
         <form onSubmit={submit} className="space-y-4 bg-card border border-border rounded-lg p-6 shadow-sm">
           <input className="w-full border px-3 py-2 rounded" type="email" required placeholder="Your email" value={email} onChange={e=>setEmail(e.target.value)} />
