@@ -38,29 +38,9 @@ export default function PasswordResetCompletePage() {
           return;
         }
 
-        // For password recovery, we need to verify the session directly
-        if (type === 'recovery' || code) {
-          // Try to get the current session after the code exchange
-          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-          
-          if (sessionError) {
-            console.error('Session error:', sessionError);
-          }
-          
-          // If no session, try to exchange the code
-          if (!session) {
-            const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-            if (error) {
-              console.error('Code exchange error:', error);
-              // For password reset, we can proceed even if code exchange fails
-              // The code will be validated when updating the password
-              setErr('Please enter your new password. The reset link is valid.');
-              setReady(true);
-              return;
-            }
-          }
-        }
-        
+        // For password reset links, we just need to verify the code exists
+        // The actual authentication will happen when the user submits the new password
+        console.log('Password reset code received:', code);
         setReady(true);
         
       } catch (e: any) {
@@ -82,27 +62,34 @@ export default function PasswordResetCompletePage() {
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get('code');
       
-      // If we have a code but no session, try to exchange it first
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session && code) {
-        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-        if (exchangeError) {
-          console.warn('Code exchange failed during password update:', exchangeError.message);
-          // Continue anyway - some flows don't require session exchange
-        }
+      if (!code) {
+        setErr('Invalid reset link. Please request a new password reset.');
+        setLoading(false);
+        return;
       }
+
+      // First, exchange the code for a session
+      const { data: sessionData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
       
-      const { error } = await supabase.auth.updateUser({ password });
+      if (exchangeError) {
+        console.error('Code exchange error:', exchangeError);
+        setErr('Invalid or expired reset link. Please request a new password reset.');
+        setLoading(false);
+        return;
+      }
+
+      // Now update the password
+      const { error: updateError } = await supabase.auth.updateUser({ password });
       
-      if (error) {
-        setErr(error.message);
+      if (updateError) {
+        setErr(updateError.message);
       } else {
         setMsg('Password updated successfully!');
         setTimeout(() => router.push('/auth/login'), 1500);
       }
     } catch (e: any) {
-      setErr(e.message || 'Network error');
+      console.error('Password update error:', e);
+      setErr(e.message || 'Failed to update password. Please try again.');
     } finally {
       setLoading(false);
     }
