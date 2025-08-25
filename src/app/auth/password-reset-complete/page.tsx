@@ -9,6 +9,7 @@ export default function PasswordResetCompletePage() {
   const [msg, setMsg] = useState<string|null>(null);
   const [err, setErr] = useState<string|null>(null);
   const [ready, setReady] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<string>('');
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = getBrowserClient();
@@ -17,7 +18,18 @@ export default function PasswordResetCompletePage() {
   useEffect(() => {
     (async () => {
       const code = searchParams.get('code');
+      const error_description = searchParams.get('error_description');
+      const error_code = searchParams.get('error_code');
+      
+      setDebugInfo(`Code: ${code}, Error: ${error_description}, Error Code: ${error_code}`);
+      
       try {
+        if (error_description) {
+          setErr(`Auth Error: ${error_description}`);
+          setReady(true);
+          return;
+        }
+        
         if (code) {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) {
@@ -25,7 +37,12 @@ export default function PasswordResetCompletePage() {
             setReady(true);
             return;
           }
+        } else {
+          setErr('No recovery code found in URL. Please use the link from your email.');
+          setReady(true);
+          return;
         }
+        
         await new Promise(r => setTimeout(r, 50));
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
@@ -57,6 +74,14 @@ export default function PasswordResetCompletePage() {
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-md space-y-6">
         <h1 className="text-2xl font-semibold text-center">Set new password</h1>
+        
+        {/* Debug info - remove this after fixing */}
+        {debugInfo && (
+          <div className="bg-gray-100 p-3 rounded text-sm text-gray-700">
+            <strong>Debug:</strong> {debugInfo}
+          </div>
+        )}
+        
         <form onSubmit={submit} className="space-y-4 bg-card border border-border rounded-lg p-6 shadow-sm">
           <input className="w-full border px-3 py-2 rounded" type="password" required placeholder="New password" value={password} onChange={e=>setPassword(e.target.value)} disabled={!ready} />
           {err && <p className="text-sm text-red-600">{err}</p>}
