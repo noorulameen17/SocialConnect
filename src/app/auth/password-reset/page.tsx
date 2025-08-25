@@ -1,12 +1,14 @@
 "use client";
 import Link from 'next/link';
 import { useState } from 'react';
+import { getBrowserClient } from '@/lib/supabaseClient';
 
 export default function PasswordResetRequestPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<string|null>(null);
   const [err, setErr] = useState<string|null>(null);
+  const supabase = getBrowserClient();
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -14,9 +16,9 @@ export default function PasswordResetRequestPage() {
     if (!email) { setErr('Email required'); return; }
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/password-reset', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email.trim() }) });
-      const json = await res.json();
-      if (!res.ok) setErr(json.error || 'Failed'); else setMsg('If that email exists, a reset link was sent.');
+      const redirectTo = `${window.location.origin}/auth/password-reset-complete`;
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo });
+      if (error) setErr(error.message); else setMsg('If that email exists, a reset link was sent.');
     } catch (e: any) {
       setErr(e.message || 'Network error');
     } finally { setLoading(false); }
