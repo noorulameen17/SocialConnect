@@ -29,9 +29,9 @@ function formatRelative(dateIso: string) {
 
 function typeMeta(type: string) {
   switch (type) {
-    case 'follow': return { icon: <UserPlus className="h-4 w-4 text-blue-600" />, text: 'started following you' };
-    case 'like': return { icon: <Heart className="h-4 w-4 text-rose-600" />, text: 'liked your post' };
-    case 'comment': return { icon: <MessageSquare className="h-4 w-4 text-emerald-600" />, text: 'commented on your post' };
+    case 'follow': return { icon: <UserPlus className="h-4 w-4 text-blue-600" />, text: 'someone started following you' };
+    case 'like': return { icon: <Heart className="h-4 w-4 text-rose-600" />, text: 'someone liked your post' };
+    case 'comment': return { icon: <MessageSquare className="h-4 w-4 text-emerald-600" />, text: 'someone commented on your post' };
     default: return { icon: <Check className="h-4 w-4" />, text: type };
   }
 }

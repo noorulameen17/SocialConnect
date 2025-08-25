@@ -16,6 +16,13 @@ export async function DELETE(_req: Request, context: AsyncParams) {
     const { data: prof } = await supabase.from('profiles').select('posts_count').eq('id', existing.author).single();
     if (prof) await supabase.from('profiles').update({ posts_count: Math.max(0, (prof.posts_count || 1) - 1) }).eq('id', existing.author);
   }
-  await supabase.from('admin_logs').insert({ admin_id: admin.id, action: 'delete_post', target_type: 'post', target_id: id });
+  
+  // Make logging non-blocking in case admin_logs table doesn't exist
+  try {
+    await supabase.from('admin_logs').insert({ admin_id: admin.id, action: 'delete_post', target_type: 'post', target_id: id });
+  } catch (logError) {
+    console.warn('Failed to log admin action:', logError);
+  }
+  
   return NextResponse.json({ success: true });
 }

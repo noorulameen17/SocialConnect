@@ -19,6 +19,13 @@ export async function POST(req: Request, context: AsyncParams) {
     .select('id, active')
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  await supabase.from('admin_logs').insert({ admin_id: user.id, action: active ? 'reactivate_user' : 'deactivate_user', target_type: 'user', target_id: id });
+  
+  // Make logging non-blocking in case admin_logs table doesn't exist
+  try {
+    await supabase.from('admin_logs').insert({ admin_id: user.id, action: active ? 'reactivate_user' : 'deactivate_user', target_type: 'user', target_id: id });
+  } catch (logError) {
+    console.warn('Failed to log admin action:', logError);
+  }
+  
   return NextResponse.json({ user: data });
 }

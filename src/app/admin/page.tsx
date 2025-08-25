@@ -2,12 +2,17 @@ import { getServerClient } from '@/lib/supabaseServer';
 import { cookies as nextCookies } from 'next/headers';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { DeletePostButton, ToggleActiveButton, ToggleAdminButton } from './admin-actions';
 
 export const dynamic = 'force-dynamic';
 
 async function fetchJSON(path: string, cookieHeader: string, init?: RequestInit) {
-  // Use relative fetch to avoid hitting deployment protection on absolute domain
-  const res = await fetch(path, {
+  const base = (process.env.NEXT_PUBLIC_SITE_URL && process.env.NEXT_PUBLIC_SITE_URL !== ''
+    ? process.env.NEXT_PUBLIC_SITE_URL
+    : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'))
+    .replace(/\/$/, '');
+  const url = `${base}${path}`;
+  const res = await fetch(url, {
     cache: 'no-store',
     headers: {
       ...(init?.headers || {}),
@@ -42,34 +47,6 @@ export default async function AdminPage() {
   const stats: any = statsResult.status === 'fulfilled' ? statsResult.value : {};
   const users: any = usersResult.status === 'fulfilled' ? usersResult.value : { users: [] };
   const posts: any = postsResult.status === 'fulfilled' ? postsResult.value : { posts: [] };
-
-  async function DemoteUserForm({ targetId, isAdmin }: { targetId: string; isAdmin: boolean }) {
-    return (
-      <form action={`/api/admin/users/${targetId}`} method="post" className="inline-block">
-        <input type="hidden" name="_method" value="PATCH" />
-        <input type="hidden" name="is_admin" value={isAdmin ? 'false' : 'true'} />
-        <button className="text-xs text-blue-600 hover:underline" type="submit">{isAdmin ? 'Demote' : 'Promote'}</button>
-      </form>
-    );
-  }
-
-  async function DeactivateUserForm({ targetId, active }: { targetId: string; active: boolean }) {
-    return (
-      <form action={`/api/admin/users/${targetId}/deactivate`} method="post" className="inline-block ml-2">
-        <input type="hidden" name="active" value={active ? 'false' : 'true'} />
-        <button className="text-xs text-red-600 hover:underline" type="submit">{active ? 'Deactivate' : 'Reactivate'}</button>
-      </form>
-    );
-  }
-
-  async function DeletePostForm({ postId }: { postId: string }) {
-    return (
-      <form action={`/api/admin/posts/${postId}`} method="post" className="inline-block">
-        <input type="hidden" name="_method" value="DELETE" />
-        <button type="submit" className="text-xs text-red-600 hover:underline">Delete</button>
-      </form>
-    );
-  }
 
   return (
     <div className="max-w-7xl mx-auto p-8 space-y-10">
@@ -120,8 +97,8 @@ export default async function AdminPage() {
                   <td className="px-3 py-2">{u.active ? 'Yes' : 'No'}</td>
                   <td className="px-3 py-2">{u.is_admin ? 'Yes' : 'No'}</td>
                   <td className="px-3 py-2 space-x-2">
-                    <DemoteUserForm targetId={u.id} isAdmin={u.is_admin} />
-                    <DeactivateUserForm targetId={u.id} active={u.active} />
+                    <ToggleAdminButton targetId={u.id} isAdmin={u.is_admin} username={u.username || 'Unknown'} />
+                    <ToggleActiveButton targetId={u.id} active={u.active} username={u.username || 'Unknown'} />
                   </td>
                 </tr>
               ))}
@@ -157,7 +134,7 @@ export default async function AdminPage() {
                   <td className="px-3 py-2">{p.category}</td>
                   <td className="px-3 py-2 text-xs">{new Date(p.created_at).toLocaleString()}</td>
                   <td className="px-3 py-2">
-                    <DeletePostForm postId={p.id} />
+                    <DeletePostButton postId={p.id} />
                   </td>
                 </tr>
               ))}
